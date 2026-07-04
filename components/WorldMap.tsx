@@ -41,10 +41,10 @@ export default function WorldMap() {
       {trips.map((trip) => (
         <Marker key={trip.id} position={[trip.lat, trip.lng]} icon={tripIcon}>
           <Popup>
-            <p className="text-xs uppercase tracking-wide text-muted">
+            <p className="font-mono text-[11px] uppercase tracking-wide text-muted">
               {trip.country} · {trip.city} · {trip.date}
             </p>
-            <p className="mt-1 font-semibold text-accent">{trip.title}</p>
+            <p className="mt-1 font-bold text-accent">{trip.title}</p>
             <p className="mt-1 text-sm leading-relaxed">{trip.description}</p>
           </Popup>
         </Marker>

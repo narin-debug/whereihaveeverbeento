@@ -2,18 +2,24 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #08090a;
+  --surface: #131417;
+  --border: rgba(255, 255, 255, 0.08);
+  --foreground: #f3f2ee;
+  --muted: #93949b;
   --accent: #d7ff3f;
-  --muted: #8a8a8a;
+  --accent-soft: rgba(215, 255, 63, 0.14);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
   --color-foreground: var(--foreground);
-  --color-accent: var(--accent);
   --color-muted: var(--muted);
-  --font-sans: var(--font-geist-sans);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-gothic-a1);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -24,11 +30,18 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3 {
+  letter-spacing: -0.02em;
 }
 
 /* Leaflet dark-theme overrides */
 .leaflet-container {
-  background: #0a0a0a;
+  background: var(--background);
   font-family: var(--font-sans);
 }
 
@@ -37,8 +50,8 @@ body {
   height: 14px;
   border-radius: 999px;
   background: var(--accent);
-  box-shadow: 0 0 0 4px rgba(215, 255, 63, 0.2), 0 0 12px rgba(215, 255, 63, 0.6);
-  border: 2px solid #0a0a0a;
+  box-shadow: 0 0 0 4px var(--accent-soft), 0 0 12px rgba(215, 255, 63, 0.6);
+  border: 2px solid var(--background);
   transition: transform 0.2s ease;
 }
 
@@ -47,14 +60,14 @@ body {
 }
 
 .leaflet-popup-content-wrapper {
-  background: #141414;
+  background: var(--surface);
   color: var(--foreground);
-  border: 1px solid rgba(215, 255, 63, 0.25);
+  border: 1px solid var(--accent-soft);
   border-radius: 12px;
 }
 
 .leaflet-popup-tip {
-  background: #141414;
+  background: var(--surface);
 }
 
 .leaflet-popup-content {
