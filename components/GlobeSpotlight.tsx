@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo, useRef, type CSSProperties, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { motion } from "framer-motion";
 import { geoOrthographic, geoPath } from "d3-geo";
 import { feature } from "topojson-client";
@@ -8,8 +14,9 @@ import countries110m from "world-atlas/countries-110m.json";
 
 const SIZE = 400;
 const RADIUS = SIZE / 2 - 4;
+const DEGREES_PER_MS = 360 / 45000; // one full spin every ~45s
 
-function useGlobePaths() {
+function useCountryFeatures() {
   return useMemo(() => {
     const topology = countries110m as unknown as Parameters<typeof feature>[0];
     const objects = (topology as { objects: Record<string, unknown> }).objects;
@@ -17,29 +24,32 @@ function useGlobePaths() {
       topology,
       objects.countries as Parameters<typeof feature>[1],
     ) as unknown as { features: GeoJSON.Feature[] };
-
-    const projection = geoOrthographic()
-      .scale(RADIUS)
-      .translate([SIZE / 2, SIZE / 2])
-      .rotate([-20, -15, 0]);
-    const path = geoPath(projection);
-
-    return {
-      outline: path({ type: "Sphere" }) ?? "",
-      countries: geo.features.map((f) => path(f) ?? "").filter(Boolean),
-    };
+    return geo.features;
   }, []);
 }
 
-function Globe(props: React.SVGProps<SVGSVGElement>) {
-  const { outline, countries } = useGlobePaths();
+function GlobeLayer({
+  count,
+  outlineRef,
+  pathRefs,
+  className,
+  style,
+}: {
+  count: number;
+  outlineRef: React.Ref<SVGPathElement>;
+  pathRefs: React.MutableRefObject<(SVGPathElement | null)[]>;
+  className?: string;
+  style?: CSSProperties;
+}) {
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} {...props}>
-      <path d={outline} fill="none" stroke="currentColor" strokeOpacity={0.35} />
-      {countries.map((d, i) => (
+    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className={className} style={style}>
+      <path ref={outlineRef} fill="none" stroke="currentColor" strokeOpacity={0.35} />
+      {Array.from({ length: count }).map((_, i) => (
         <path
           key={i}
-          d={d}
+          ref={(el) => {
+            pathRefs.current[i] = el;
+          }}
           fill="currentColor"
           fillOpacity={0.35}
           stroke="currentColor"
@@ -51,9 +61,52 @@ function Globe(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export default function GlobeSpotlight({ children }: { children?: ReactNode }) {
+  const features = useCountryFeatures();
+
   const wrapRef = useRef<HTMLDivElement>(null);
   const globeRef = useRef<HTMLDivElement>(null);
   const glowRef = useRef<HTMLDivElement>(null);
+
+  const dimOutlineRef = useRef<SVGPathElement>(null);
+  const brightOutlineRef = useRef<SVGPathElement>(null);
+  const dimPathRefs = useRef<(SVGPathElement | null)[]>([]);
+  const brightPathRefs = useRef<(SVGPathElement | null)[]>([]);
+
+  useEffect(() => {
+    const projection = geoOrthographic().scale(RADIUS).translate([SIZE / 2, SIZE / 2]);
+    const path = geoPath(projection);
+    let lambda = -20;
+    let lastTime = performance.now();
+    let rafId: number;
+
+    const render = () => {
+      projection.rotate([lambda, -15, 0]);
+
+      const outlineD = path({ type: "Sphere" }) ?? "";
+      dimOutlineRef.current?.setAttribute("d", outlineD);
+      brightOutlineRef.current?.setAttribute("d", outlineD);
+
+      features.forEach((f, i) => {
+        const d = path(f) ?? "";
+        dimPathRefs.current[i]?.setAttribute("d", d);
+        brightPathRefs.current[i]?.setAttribute("d", d);
+      });
+    };
+
+    // Paint the first frame synchronously so the globe is visible even if
+    // requestAnimationFrame is throttled (e.g. the tab starts backgrounded).
+    render();
+
+    const tick = (time: number) => {
+      lambda += (time - lastTime) * DEGREES_PER_MS;
+      lastTime = time;
+      render();
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, [features]);
 
   const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = globeRef.current?.getBoundingClientRect();
@@ -86,7 +139,12 @@ export default function GlobeSpotlight({ children }: { children?: ReactNode }) {
         transition={{ duration: 0.9, delay: 1.5, ease: "easeOut" }}
         className="relative h-[52vh] w-[52vh] max-h-[480px] max-w-[480px]"
       >
-        <Globe className="pointer-events-none absolute inset-0 h-full w-full text-muted/50" />
+        <GlobeLayer
+          count={features.length}
+          outlineRef={dimOutlineRef}
+          pathRefs={dimPathRefs}
+          className="pointer-events-none absolute inset-0 h-full w-full text-muted/50"
+        />
 
         <div
           ref={glowRef}
@@ -102,7 +160,10 @@ export default function GlobeSpotlight({ children }: { children?: ReactNode }) {
                 "radial-gradient(180px 180px at var(--x) var(--y), black 0%, transparent 70%)",
             }}
           >
-            <Globe
+            <GlobeLayer
+              count={features.length}
+              outlineRef={brightOutlineRef}
+              pathRefs={brightPathRefs}
               className="h-full w-full text-accent"
               style={{ filter: "drop-shadow(0 0 8px var(--accent-glow))" }}
             />
