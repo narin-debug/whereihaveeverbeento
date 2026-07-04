@@ -2,14 +2,14 @@
 @import "leaflet/dist/leaflet.css";
 
 :root {
-  --background: #08090a;
-  --surface: #131417;
-  --border: rgba(255, 255, 255, 0.08);
-  --foreground: #f3f2ee;
-  --muted: #93949b;
+  --background: #f5f4f2;
+  --surface: #ffffff;
+  --border: rgba(0, 0, 0, 0.08);
+  --foreground: #1c1d1a;
+  --muted: #6c6e69;
   --accent: #a8b5a2;
-  --accent-soft: rgba(168, 181, 162, 0.16);
-  --accent-glow: rgba(168, 181, 162, 0.55);
+  --accent-soft: rgba(168, 181, 162, 0.22);
+  --accent-glow: rgba(168, 181, 162, 0.45);
 }
 
 @theme inline {
@@ -41,7 +41,7 @@ h3 {
   letter-spacing: -0.02em;
 }
 
-/* Leaflet dark-theme overrides */
+/* Leaflet theme overrides */
 .leaflet-container {
   background: var(--background);
   font-family: var(--font-sans);

@@ -4,7 +4,6 @@ import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Nav from "@/components/Nav";
 import GlobeSpotlight from "@/components/GlobeSpotlight";
-import { trips } from "@/data/trips";
 
 const WorldMap = dynamic(() => import("@/components/WorldMap"), {
   ssr: false,
@@ -37,23 +36,6 @@ export default function Home() {
         >
           Voyager
         </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 0.6 }}
-          className="mt-6 max-w-md text-sm text-muted sm:text-base"
-        >
-          {trips.length}개 도시를 지나며 쌓아온 여정. 지도를 눌러 각 도시의 기록을 확인하세요.
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 0.9 }}
-          className="absolute bottom-10 flex flex-col items-center gap-2 text-muted"
-        >
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em]">Scroll</span>
-          <span className="h-8 w-px animate-pulse bg-muted" />
-        </motion.div>
       </GlobeSpotlight>
 
       <section id="map" className="px-6 pb-24 md:px-12">
