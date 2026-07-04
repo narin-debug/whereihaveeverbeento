@@ -19,7 +19,7 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
-  --font-sans: var(--font-gothic-a1);
+  --font-sans: var(--font-noto-sans-kr);
   --font-mono: var(--font-geist-mono);
 }
 
