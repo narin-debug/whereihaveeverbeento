@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Nav from "@/components/Nav";
+import GlobeSpotlight from "@/components/GlobeSpotlight";
 import { trips } from "@/data/trips";
 
 const WorldMap = dynamic(() => import("@/components/WorldMap"), {
@@ -19,7 +20,7 @@ export default function Home() {
     <>
       <Nav />
 
-      <section className="relative flex min-h-screen flex-col items-center justify-center px-6 text-center">
+      <GlobeSpotlight>
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -29,19 +30,17 @@ export default function Home() {
           A Travel Log
         </motion.p>
         <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.15 }}
-          className="mt-6 text-5xl font-black tracking-tight sm:text-7xl"
+          initial={{ clipPath: "inset(0 100% 0 0)" }}
+          animate={{ clipPath: "inset(0 0% 0 0)" }}
+          transition={{ duration: 1.1, delay: 0.2, ease: "easeInOut" }}
+          className="mt-6 text-6xl font-black tracking-tight sm:text-8xl"
         >
-          세계를 걷고,
-          <br />
-          기록을 <span className="text-accent">남기다</span>
+          Voyager
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
+          transition={{ duration: 0.7, delay: 0.6 }}
           className="mt-6 max-w-md text-sm text-muted sm:text-base"
         >
           {trips.length}개 도시를 지나며 쌓아온 여정. 지도를 눌러 각 도시의 기록을 확인하세요.
@@ -49,13 +48,13 @@ export default function Home() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 0.7 }}
+          transition={{ duration: 0.7, delay: 0.9 }}
           className="absolute bottom-10 flex flex-col items-center gap-2 text-muted"
         >
           <span className="font-mono text-[10px] uppercase tracking-[0.3em]">Scroll</span>
           <span className="h-8 w-px animate-pulse bg-muted" />
         </motion.div>
-      </section>
+      </GlobeSpotlight>
 
       <section id="map" className="px-6 pb-24 md:px-12">
         <motion.h2
