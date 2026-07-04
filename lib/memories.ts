@@ -39,3 +39,21 @@ export async function createMemory(
 
   return { ok: true, memory: await res.json() };
 }
+
+export async function deleteMemory(
+  id: string,
+  passcode: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const res = await fetch(`/api/memories/${id}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ passcode }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    return { ok: false, error: body?.error ?? "기록을 삭제하지 못했어요." };
+  }
+
+  return { ok: true };
+}

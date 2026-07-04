@@ -28,6 +28,10 @@ export default function Home() {
     setMemories((prev) => [...prev, memory]);
   };
 
+  const handleMemoryDeleted = (id: string) => {
+    setMemories((prev) => prev.filter((m) => m.id !== id));
+  };
+
   return (
     <>
       <Nav />
@@ -71,7 +75,7 @@ export default function Home() {
           transition={{ duration: 0.7 }}
           className="h-[70vh] w-full overflow-hidden rounded-2xl border border-border bg-surface"
         >
-          <WorldMap memories={memories} />
+          <WorldMap memories={memories} onMemoryDeleted={handleMemoryDeleted} />
         </motion.div>
       </section>
 
