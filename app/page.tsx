@@ -6,8 +6,7 @@ import { motion } from "framer-motion";
 import Nav from "@/components/Nav";
 import GlobeSpotlight from "@/components/GlobeSpotlight";
 import MemoryForm from "@/components/MemoryForm";
-import { trips } from "@/data/trips";
-import { loadMemories, saveMemories, type Memory } from "@/lib/memories";
+import { fetchMemories, type Memory } from "@/lib/memories";
 
 const WorldMap = dynamic(() => import("@/components/WorldMap"), {
   ssr: false,
@@ -22,14 +21,11 @@ export default function Home() {
   const [memories, setMemories] = useState<Memory[]>([]);
 
   useEffect(() => {
-    setMemories(loadMemories());
+    fetchMemories().then(setMemories);
   }, []);
 
-  const handleAddMemory = (memory: Memory) => {
-    const next = [...memories, memory];
-    const ok = saveMemories(next);
-    if (ok) setMemories(next);
-    return ok;
+  const handleMemoryAdded = (memory: Memory) => {
+    setMemories((prev) => [...prev, memory]);
   };
 
   return (
@@ -66,7 +62,7 @@ export default function Home() {
           >
             지금까지의 여정
           </motion.h2>
-          <MemoryForm trips={trips} onAdd={handleAddMemory} />
+          <MemoryForm onAdded={handleMemoryAdded} />
         </div>
         <motion.div
           initial={{ opacity: 0, y: 24 }}

@@ -1,20 +1,16 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import type { Trip } from "@/data/trips";
-import type { Memory } from "@/lib/memories";
+import { countries } from "@/data/countries";
+import { createMemory, type Memory } from "@/lib/memories";
 
-export default function MemoryForm({
-  trips,
-  onAdd,
-}: {
-  trips: Trip[];
-  onAdd: (memory: Memory) => boolean;
-}) {
+export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => void }) {
   const [open, setOpen] = useState(false);
-  const [tripId, setTripId] = useState(trips[0]?.id ?? "");
+  const [countryId, setCountryId] = useState(countries[0]?.id ?? "");
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
+  const [passcode, setPasscode] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,9 +23,10 @@ export default function MemoryForm({
   }, [open]);
 
   const resetForm = () => {
-    setTripId(trips[0]?.id ?? "");
+    setCountryId(countries[0]?.id ?? "");
     setPhotoDataUrl(null);
     setCaption("");
+    setPasscode("");
     setError(null);
   };
 
@@ -41,24 +38,33 @@ export default function MemoryForm({
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!tripId || !photoDataUrl || !caption.trim()) return;
+    const country = countries.find((c) => c.id === countryId);
+    if (!country || !photoDataUrl || !caption.trim() || !passcode) return;
 
-    const memory: Memory = {
-      id: crypto.randomUUID(),
-      tripId,
-      photoDataUrl,
-      caption: caption.trim(),
-      createdAt: new Date().toISOString(),
-    };
-
+    setSubmitting(true);
     setError(null);
-    const ok = onAdd(memory);
-    if (ok === false) {
-      setError("저장 공간이 부족해요. 더 작은 사진으로 다시 시도해주세요.");
+
+    const result = await createMemory(
+      {
+        country: country.name,
+        lat: country.lat,
+        lng: country.lng,
+        photoDataUrl,
+        caption: caption.trim(),
+      },
+      passcode,
+    );
+
+    setSubmitting(false);
+
+    if (!result.ok) {
+      setError(result.error);
       return;
     }
+
+    onAdded(result.memory);
     resetForm();
     setOpen(false);
   };
@@ -99,13 +105,13 @@ export default function MemoryForm({
               여행지
             </label>
             <select
-              value={tripId}
-              onChange={(e) => setTripId(e.target.value)}
+              value={countryId}
+              onChange={(e) => setCountryId(e.target.value)}
               className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
             >
-              {trips.map((trip) => (
-                <option key={trip.id} value={trip.id}>
-                  {trip.country} · {trip.city}
+              {countries.map((country) => (
+                <option key={country.id} value={country.id}>
+                  {country.name}
                 </option>
               ))}
             </select>
@@ -139,14 +145,25 @@ export default function MemoryForm({
               className="mt-2 w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm"
             />
 
+            <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
+              비밀번호
+            </label>
+            <input
+              type="password"
+              value={passcode}
+              onChange={(e) => setPasscode(e.target.value)}
+              placeholder="소유자 비밀번호"
+              className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+
             {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
 
             <button
               type="submit"
-              disabled={!tripId || !photoDataUrl || !caption.trim()}
+              disabled={!countryId || !photoDataUrl || !caption.trim() || !passcode || submitting}
               className="mt-5 w-full rounded-full bg-accent py-2 text-sm font-semibold text-background disabled:opacity-40"
             >
-              기록 저장
+              {submitting ? "저장 중..." : "기록 저장"}
             </button>
           </form>
         </div>
