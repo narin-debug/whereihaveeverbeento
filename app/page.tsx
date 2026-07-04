@@ -1,9 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import Nav from "@/components/Nav";
 import GlobeSpotlight from "@/components/GlobeSpotlight";
+import MemoryForm from "@/components/MemoryForm";
+import { trips } from "@/data/trips";
+import { loadMemories, saveMemories, type Memory } from "@/lib/memories";
 
 const WorldMap = dynamic(() => import("@/components/WorldMap"), {
   ssr: false,
@@ -15,6 +19,19 @@ const WorldMap = dynamic(() => import("@/components/WorldMap"), {
 });
 
 export default function Home() {
+  const [memories, setMemories] = useState<Memory[]>([]);
+
+  useEffect(() => {
+    setMemories(loadMemories());
+  }, []);
+
+  const handleAddMemory = (memory: Memory) => {
+    const next = [...memories, memory];
+    const ok = saveMemories(next);
+    if (ok) setMemories(next);
+    return ok;
+  };
+
   return (
     <>
       <Nav />
@@ -39,15 +56,18 @@ export default function Home() {
       </GlobeSpotlight>
 
       <section id="map" className="px-6 pb-24 md:px-12">
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.6 }}
-          className="mb-8 text-2xl font-bold sm:text-3xl"
-        >
-          지금까지의 여정
-        </motion.h2>
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.6 }}
+            className="text-2xl font-bold sm:text-3xl"
+          >
+            지금까지의 여정
+          </motion.h2>
+          <MemoryForm trips={trips} onAdd={handleAddMemory} />
+        </div>
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -55,7 +75,7 @@ export default function Home() {
           transition={{ duration: 0.7 }}
           className="h-[70vh] w-full overflow-hidden rounded-2xl border border-border bg-surface"
         >
-          <WorldMap />
+          <WorldMap memories={memories} />
         </motion.div>
       </section>
 
