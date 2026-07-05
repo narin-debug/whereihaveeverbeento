@@ -13,9 +13,27 @@ const NAME_OVERRIDES_BY_TOPO_NAME: Record<string, string> = {
   Kosovo: "코소보",
 };
 
-// The library's default Korean name predates Turkey's 2022 rename request.
+// The library's default Korean names are sometimes formal, outdated, or
+// misspelled rather than the name Korean speakers would actually search for.
 const NAME_OVERRIDES_BY_ALPHA2: Record<string, string> = {
-  TR: "튀르키예",
+  TR: "튀르키예", // predates Turkey's 2022 rename request
+  TW: "대만", // library defaults to the formal "중화민국"
+  GE: "조지아", // "그루지아" is the old Russian-derived name
+  SZ: "에스와티니", // renamed from Swaziland in 2018
+  CY: "키프로스", // "사이프러스" is a less common transliteration
+  CZ: "체코", // "체코공화국" is the formal name
+  ET: "에티오피아", // "이디오피아" is a dated spelling
+  TN: "튀니지", // "튀니지아" is a misspelling
+  TM: "투르크메니스탄", // "트르크메니스탄" is a misspelling
+  PT: "포르투갈", // "포르투칼" is a misspelling
+  PL: "폴란드", // "폴랜드" is a misspelling
+  GL: "그린란드", // "그린랜드" is a misspelling
+  GW: "기니비사우", // "기네비쏘" is a misspelling
+  AQ: "남극", // "안타티카" is an odd transliteration
+  KG: "키르기스스탄", // "키르키즈스탄" is a misspelling
+  ZW: "짐바브웨", // "짐바브웨 공화국" is the formal name
+  RU: "러시아", // "러시아연방" is the formal name
+  AE: "아랍에미리트", // "아랍에미리트연합" is non-standard
 };
 
 export type Country = {
