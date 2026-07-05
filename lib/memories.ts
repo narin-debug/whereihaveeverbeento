@@ -3,7 +3,6 @@ export type Memory = {
   country: string;
   lat: number;
   lng: number;
-  photoDataUrl: string;
   caption: string;
   createdAt: string;
 };
@@ -15,6 +14,13 @@ export type NewMemory = {
   photoDataUrl: string;
   caption: string;
 };
+
+// Photos are served from their own endpoint instead of being embedded in the
+// list/create responses, so a growing number of memories never inflates
+// those payloads past Vercel's 4.5MB serverless response limit.
+export function memoryPhotoUrl(id: string): string {
+  return `/api/memories/${id}/photo`;
+}
 
 export async function fetchMemories(): Promise<Memory[]> {
   const res = await fetch("/api/memories", { cache: "no-store" });

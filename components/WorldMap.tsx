@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { trips } from "@/data/trips";
-import { deleteMemory, type Memory } from "@/lib/memories";
+import { deleteMemory, memoryPhotoUrl, type Memory } from "@/lib/memories";
 
 const tripIcon = L.divIcon({
   className: "",
@@ -51,7 +51,7 @@ function MemoryList({
         <div key={memory.id} className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={memory.photoDataUrl}
+            src={memoryPhotoUrl(memory.id)}
             alt={memory.caption}
             className="h-12 w-12 shrink-0 rounded-md object-cover"
           />
