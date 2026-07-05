@@ -5,6 +5,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { trips } from "@/data/trips";
 import { deleteMemory, memoryPhotoUrl, type Memory } from "@/lib/memories";
+import { translateErrorCode } from "@/lib/i18n";
+import { useTranslations } from "@/lib/locale-context";
 
 const tripIcon = L.divIcon({
   className: "",
@@ -32,14 +34,16 @@ function MemoryList({
   memories: Memory[];
   onDeleted: (id: string) => void;
 }) {
+  const t = useTranslations();
+
   if (memories.length === 0) return null;
 
   const handleDelete = async (id: string) => {
-    const passcode = window.prompt("삭제하려면 소유자 비밀번호를 입력하세요");
+    const passcode = window.prompt(t("deletePrompt"));
     if (!passcode) return;
     const result = await deleteMemory(id, passcode);
     if (!result.ok) {
-      window.alert(result.error);
+      window.alert(translateErrorCode(result.error, "errorDeleteFailed", t));
       return;
     }
     onDeleted(id);
@@ -59,10 +63,10 @@ function MemoryList({
           <button
             type="button"
             onClick={() => handleDelete(memory.id)}
-            aria-label="기록 삭제"
+            aria-label={t("deleteAriaLabel")}
             className="shrink-0 text-xs text-muted transition-colors hover:text-accent"
           >
-            삭제
+            {t("deleteAction")}
           </button>
         </div>
       ))}

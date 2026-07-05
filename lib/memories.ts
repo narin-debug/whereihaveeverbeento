@@ -40,7 +40,7 @@ export async function createMemory(
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    return { ok: false, error: body?.error ?? "기록을 저장하지 못했어요." };
+    return { ok: false, error: body?.error ?? "save_failed" };
   }
 
   return { ok: true, memory: await res.json() };
@@ -58,7 +58,7 @@ export async function deleteMemory(
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    return { ok: false, error: body?.error ?? "기록을 삭제하지 못했어요." };
+    return { ok: false, error: body?.error ?? "delete_failed" };
   }
 
   return { ok: true };

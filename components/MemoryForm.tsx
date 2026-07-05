@@ -3,6 +3,8 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { countries } from "@/data/countries";
 import { createMemory, type Memory } from "@/lib/memories";
+import { translateErrorCode } from "@/lib/i18n";
+import { useTranslations } from "@/lib/locale-context";
 
 const MAX_DIMENSION = 1600;
 const JPEG_QUALITY = 0.82;
@@ -40,6 +42,7 @@ function compressImage(file: File): Promise<string> {
 }
 
 export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => void }) {
+  const t = useTranslations();
   const [open, setOpen] = useState(false);
   const [countryId, setCountryId] = useState(countries[0]?.id ?? "");
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
@@ -71,7 +74,7 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
     try {
       setPhotoDataUrl(await compressImage(file));
     } catch {
-      setError("사진을 처리하지 못했어요. 다른 사진으로 시도해주세요.");
+      setError(t("errorPhotoProcessing"));
     }
   };
 
@@ -97,7 +100,7 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
     setSubmitting(false);
 
     if (!result.ok) {
-      setError(result.error);
+      setError(translateErrorCode(result.error, "errorSaveFailed", t));
       return;
     }
 
@@ -113,7 +116,7 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
         onClick={() => setOpen(true)}
         className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-accent"
       >
-        + 기록 남기기
+        {t("addMemory")}
       </button>
 
       {open && (
@@ -127,11 +130,11 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
             className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-xl"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold">새 기록 남기기</h3>
+              <h3 className="text-lg font-bold">{t("formTitle")}</h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                aria-label="닫기"
+                aria-label={t("close")}
                 className="text-muted transition-colors hover:text-foreground"
               >
                 ✕
@@ -139,7 +142,7 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
             </div>
 
             <label className="mt-5 block text-xs font-mono uppercase tracking-wide text-muted">
-              여행지
+              {t("destinationLabel")}
             </label>
             <select
               value={countryId}
@@ -154,7 +157,7 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
             </select>
 
             <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
-              사진
+              {t("photoLabel")}
             </label>
             <input
               type="file"
@@ -166,30 +169,30 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={photoDataUrl}
-                alt="선택한 사진 미리보기"
+                alt={t("photoPreviewAlt")}
                 className="mt-3 h-32 w-full rounded-lg object-cover"
               />
             )}
 
             <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
-              캡션
+              {t("captionLabel")}
             </label>
             <textarea
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              placeholder="이 순간을 짧게 남겨보세요"
+              placeholder={t("captionPlaceholder")}
               rows={3}
               className="mt-2 w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm"
             />
 
             <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
-              비밀번호
+              {t("passwordLabel")}
             </label>
             <input
               type="password"
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
-              placeholder="소유자 비밀번호"
+              placeholder={t("passwordPlaceholder")}
               className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
             />
 
@@ -200,7 +203,7 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
               disabled={!countryId || !photoDataUrl || !caption.trim() || !passcode || submitting}
               className="mt-5 w-full rounded-full bg-accent py-2 text-sm font-semibold text-background disabled:opacity-40"
             >
-              {submitting ? "저장 중..." : "기록 저장"}
+              {submitting ? t("saving") : t("saveMemory")}
             </button>
           </form>
         </div>

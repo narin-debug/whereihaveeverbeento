@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   const { passcode, country, lat, lng, photoDataUrl, caption } = body ?? {};
 
   if (passcode !== process.env.OWNER_PASSCODE) {
-    return NextResponse.json({ error: "비밀번호가 올바르지 않아요." }, { status: 401 });
+    return NextResponse.json({ error: "invalid_passcode" }, { status: 401 });
   }
   if (
     typeof country !== "string" ||
@@ -48,10 +48,10 @@ export async function POST(request: Request) {
     typeof caption !== "string" ||
     !caption
   ) {
-    return NextResponse.json({ error: "필수 항목이 누락됐어요." }, { status: 400 });
+    return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
   if (photoDataUrl.length > MAX_PHOTO_DATA_URL_LENGTH) {
-    return NextResponse.json({ error: "사진이 너무 커요. 더 작은 사진으로 시도해주세요." }, { status: 413 });
+    return NextResponse.json({ error: "photo_too_large" }, { status: 413 });
   }
 
   await ensureTable();

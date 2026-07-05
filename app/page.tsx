@@ -7,17 +7,26 @@ import Nav from "@/components/Nav";
 import GlobeSpotlight from "@/components/GlobeSpotlight";
 import MemoryForm from "@/components/MemoryForm";
 import { fetchMemories, type Memory } from "@/lib/memories";
+import { useTranslations } from "@/lib/locale-context";
 
 const WorldMap = dynamic(() => import("@/components/WorldMap"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full w-full items-center justify-center text-sm text-muted">
-      지도를 불러오는 중...
-    </div>
+    <MapLoading />
   ),
 });
 
+function MapLoading() {
+  const t = useTranslations();
+  return (
+    <div className="flex h-full w-full items-center justify-center text-sm text-muted">
+      {t("mapLoading")}
+    </div>
+  );
+}
+
 export default function Home() {
+  const t = useTranslations();
   const [memories, setMemories] = useState<Memory[]>([]);
 
   useEffect(() => {
@@ -43,7 +52,7 @@ export default function Home() {
           transition={{ duration: 0.6 }}
           className="font-mono text-xs uppercase tracking-[0.4em] text-muted"
         >
-          A Travel Log
+          {t("heroEyebrow")}
         </motion.p>
         <motion.h1
           initial={{ clipPath: "inset(0 100% 0 0)" }}
@@ -64,7 +73,7 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="text-2xl font-bold sm:text-3xl"
           >
-            지금까지의 여정
+            {t("journeySoFar")}
           </motion.h2>
           <MemoryForm onAdded={handleMemoryAdded} />
         </div>
@@ -80,10 +89,7 @@ export default function Home() {
       </section>
 
       <section id="about" className="border-t border-border px-6 py-16 text-center md:px-12">
-        <p className="mx-auto max-w-lg text-sm text-muted">
-          이 사이트는 세계여행의 순간들을 기록하기 위해 만들어졌습니다. 앞으로 다녀온 도시가
-          늘어날 때마다 지도 위에 새로운 기록이 쌓입니다.
-        </p>
+        <p className="mx-auto max-w-lg text-sm text-muted">{t("aboutText")}</p>
       </section>
     </>
   );
