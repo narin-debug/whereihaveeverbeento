@@ -1,8 +1,8 @@
-import { geoCentroid } from "d3-geo";
 import { feature } from "topojson-client";
 import isoCountries from "i18n-iso-countries";
 import ko from "i18n-iso-countries/langs/ko.json";
 import countries110m from "world-atlas/countries-110m.json";
+import { capitalCoordinates } from "./capital-coordinates";
 
 isoCountries.registerLocale(ko);
 
@@ -45,8 +45,13 @@ export const countries: Country[] = geo.features
       (alpha2 ? isoCountries.getName(alpha2, "ko") : undefined) ??
       NAME_OVERRIDES_BY_TOPO_NAME[f.properties.name] ??
       f.properties.name;
-    const [lng, lat] = geoCentroid(f);
+    // Use the capital city's coordinates rather than the landmass centroid --
+    // countries with far-flung overseas territories (e.g. France + French
+    // Guiana) produce a combined centroid nowhere near the country itself.
+    const coords = capitalCoordinates[id];
+    if (!coords) return null;
+    const [lat, lng] = coords;
     return { id, name, lat, lng };
   })
-  .filter((c) => Number.isFinite(c.lat) && Number.isFinite(c.lng))
+  .filter((c): c is Country => c !== null)
   .sort((a, b) => a.name.localeCompare(b.name, "ko"));
