@@ -8,6 +8,10 @@ import { deleteMemory, memoryPhotoUrl, type Memory } from "@/lib/memories";
 import { translateErrorCode } from "@/lib/i18n";
 import { useTranslations } from "@/lib/locale-context";
 
+// Keep the map to a single, non-repeating world -- Leaflet's default lets you
+// pan/scroll horizontally forever, revealing duplicate copies of every continent.
+const WORLD_BOUNDS = L.latLngBounds([-85, -180], [85, 180]);
+
 const tripIcon = L.divIcon({
   className: "",
   html: '<div class="trip-marker"></div>',
@@ -99,6 +103,9 @@ export default function WorldMap({
       center={[20, 30]}
       zoom={2}
       minZoom={2}
+      maxBounds={WORLD_BOUNDS}
+      maxBoundsViscosity={1.0}
+      worldCopyJump={false}
       scrollWheelZoom={false}
       className="h-full w-full"
     >
@@ -106,6 +113,7 @@ export default function WorldMap({
       <TileLayer
         url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        noWrap
       />
       {trips.map((trip) => {
         const tripMemories = memories.filter((m) => m.country === trip.country);
