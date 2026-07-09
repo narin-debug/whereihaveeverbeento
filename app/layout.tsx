@@ -16,11 +16,30 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://world-travel-site.vercel.app";
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = detectLocale((await headers()).get("accept-language"));
+  const title = translations[locale].siteTitle;
+  const description = translations[locale].siteDescription;
+
   return {
-    title: translations[locale].siteTitle,
-    description: translations[locale].siteDescription,
+    metadataBase: new URL(SITE_URL),
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: SITE_URL,
+      siteName: "Wanderlog",
+      locale: locale === "ko" ? "ko_KR" : "en_US",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 

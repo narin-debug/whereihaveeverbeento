@@ -1,5 +1,6 @@
 import { sql } from "@vercel/postgres";
 import { NextResponse } from "next/server";
+import { getClientIp, isRateLimited, recordFailedAttempt } from "@/lib/rate-limit";
 
 async function ensureTable() {
   await sql`
@@ -32,10 +33,16 @@ export async function GET() {
 const MAX_PHOTO_DATA_URL_LENGTH = 4_500_000; // ~4.5MB as base64 text
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  if (await isRateLimited(ip)) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+
   const body = await request.json().catch(() => null);
   const { passcode, country, lat, lng, photoDataUrl, caption } = body ?? {};
 
   if (passcode !== process.env.OWNER_PASSCODE) {
+    await recordFailedAttempt(ip);
     return NextResponse.json({ error: "invalid_passcode" }, { status: 401 });
   }
   if (

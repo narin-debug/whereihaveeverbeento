@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Nav from "@/components/Nav";
 import GlobeSpotlight from "@/components/GlobeSpotlight";
 import MemoryForm from "@/components/MemoryForm";
+import Timeline from "@/components/Timeline";
 import { fetchMemories, type Memory } from "@/lib/memories";
 import { useTranslations } from "@/lib/locale-context";
 
@@ -86,6 +87,19 @@ export default function Home() {
         >
           <WorldMap memories={memories} onMemoryDeleted={handleMemoryDeleted} />
         </motion.div>
+      </section>
+
+      <section id="timeline" className="border-t border-border px-6 pb-24 pt-16 md:px-12">
+        <motion.h2
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8 text-2xl font-bold sm:text-3xl"
+        >
+          {t("timelineHeading")}
+        </motion.h2>
+        <Timeline memories={memories} onMemoryDeleted={handleMemoryDeleted} />
       </section>
 
       <section id="about" className="border-t border-border px-6 py-16 text-center md:px-12">

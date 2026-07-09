@@ -36,6 +36,9 @@ export const translations = {
     errorSaveFailed: "기록을 저장하지 못했어요.",
     errorDeleteFailed: "기록을 삭제하지 못했어요.",
     errorPhotoProcessing: "사진을 처리하지 못했어요. 다른 사진으로 시도해주세요.",
+    errorRateLimited: "너무 많이 시도했어요. 잠시 후 다시 시도해주세요.",
+    timelineHeading: "타임라인",
+    timelineEmpty: "아직 기록이 없어요.",
   },
   en: {
     siteTitle: "Wanderlog — A Travel Log",
@@ -70,6 +73,9 @@ export const translations = {
     errorSaveFailed: "Couldn't save the memory.",
     errorDeleteFailed: "Couldn't delete the memory.",
     errorPhotoProcessing: "Couldn't process that photo. Try a different one.",
+    errorRateLimited: "Too many attempts. Please try again later.",
+    timelineHeading: "Timeline",
+    timelineEmpty: "No memories yet.",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 
@@ -86,6 +92,7 @@ const ERROR_CODE_KEYS: Record<string, TranslationKey> = {
   not_found: "errorNotFound",
   save_failed: "errorSaveFailed",
   delete_failed: "errorDeleteFailed",
+  rate_limited: "errorRateLimited",
 };
 
 export function translateErrorCode(

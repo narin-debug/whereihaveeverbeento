@@ -1,3 +1,5 @@
+import { translateErrorCode, type TranslationKey } from "./i18n";
+
 export type Memory = {
   id: string;
   country: string;
@@ -62,4 +64,20 @@ export async function deleteMemory(
   }
 
   return { ok: true };
+}
+
+// Shared by every place a delete button appears (map popups, timeline cards):
+// prompt for the owner passcode, call the API, and surface any error.
+export async function promptAndDelete(
+  id: string,
+  t: (key: TranslationKey) => string,
+): Promise<boolean> {
+  const passcode = window.prompt(t("deletePrompt"));
+  if (!passcode) return false;
+  const result = await deleteMemory(id, passcode);
+  if (!result.ok) {
+    window.alert(translateErrorCode(result.error, "errorDeleteFailed", t));
+    return false;
+  }
+  return true;
 }

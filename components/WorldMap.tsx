@@ -4,8 +4,7 @@ import { useEffect, useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { trips } from "@/data/trips";
-import { deleteMemory, memoryPhotoUrl, type Memory } from "@/lib/memories";
-import { translateErrorCode } from "@/lib/i18n";
+import { memoryPhotoUrl, promptAndDelete, type Memory } from "@/lib/memories";
 import { useTranslations } from "@/lib/locale-context";
 
 // Keep the map to a single, non-repeating world -- Leaflet's default lets you
@@ -43,14 +42,7 @@ function MemoryList({
   if (memories.length === 0) return null;
 
   const handleDelete = async (id: string) => {
-    const passcode = window.prompt(t("deletePrompt"));
-    if (!passcode) return;
-    const result = await deleteMemory(id, passcode);
-    if (!result.ok) {
-      window.alert(translateErrorCode(result.error, "errorDeleteFailed", t));
-      return;
-    }
-    onDeleted(id);
+    if (await promptAndDelete(id, t)) onDeleted(id);
   };
 
   return (
