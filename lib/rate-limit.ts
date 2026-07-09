@@ -1,7 +1,7 @@
 import { sql } from "@vercel/postgres";
 
 const WINDOW_MINUTES = 15;
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 1;
 
 async function ensureTable() {
   await sql`
