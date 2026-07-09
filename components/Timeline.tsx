@@ -36,7 +36,7 @@ export default function Timeline({
           <img
             src={memoryPhotoUrl(memory.id)}
             alt={memory.caption}
-            className="h-48 w-full object-cover"
+            className="max-h-96 w-full bg-surface object-contain"
           />
           <div className="p-4">
             <div className="flex items-center justify-between gap-2">
