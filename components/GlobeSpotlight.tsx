@@ -137,7 +137,7 @@ export default function GlobeSpotlight({ children }: { children?: ReactNode }) {
         initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.9, delay: 1.5, ease: "easeOut" }}
-        className="relative h-[52vh] w-[52vh] max-h-[480px] max-w-[480px]"
+        className="relative h-[min(52vh,85vw)] w-[min(52vh,85vw)] max-h-[480px] max-w-[480px]"
       >
         <GlobeLayer
           count={features.length}
