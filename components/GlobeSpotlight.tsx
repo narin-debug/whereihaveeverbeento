@@ -108,17 +108,45 @@ export default function GlobeSpotlight({ children }: { children?: ReactNode }) {
     return () => cancelAnimationFrame(rafId);
   }, [features]);
 
-  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const updateSpotlight = (clientX: number, clientY: number) => {
     const rect = globeRef.current?.getBoundingClientRect();
     if (!rect || !glowRef.current) return;
-    glowRef.current.style.setProperty("--x", `${e.clientX - rect.left}px`);
-    glowRef.current.style.setProperty("--y", `${e.clientY - rect.top}px`);
+    glowRef.current.style.setProperty("--x", `${clientX - rect.left}px`);
+    glowRef.current.style.setProperty("--y", `${clientY - rect.top}px`);
+  };
+
+  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    updateSpotlight(e.clientX, e.clientY);
   };
 
   const handleLeave = () => {
     glowRef.current?.style.setProperty("--x", "50%");
     glowRef.current?.style.setProperty("--y", "50%");
   };
+
+  // Dragging a finger across the globe mirrors the desktop mouse-move
+  // spotlight. Attached as a native listener (not React's onTouchMove) so we
+  // can call preventDefault -- React registers touch handlers as passive by
+  // default, which silently ignores preventDefault and lets the page scroll
+  // instead of tracking the touch.
+  useEffect(() => {
+    const el = globeRef.current;
+    if (!el) return;
+
+    const handleTouch = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      e.preventDefault();
+      updateSpotlight(touch.clientX, touch.clientY);
+    };
+
+    el.addEventListener("touchstart", handleTouch, { passive: false });
+    el.addEventListener("touchmove", handleTouch, { passive: false });
+    return () => {
+      el.removeEventListener("touchstart", handleTouch);
+      el.removeEventListener("touchmove", handleTouch);
+    };
+  }, []);
 
   return (
     <div
