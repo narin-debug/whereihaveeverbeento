@@ -11,6 +11,9 @@ import { useTranslations } from "@/lib/locale-context";
 const LocationPickerMap = dynamic(() => import("@/components/LocationPickerMap"), {
   ssr: false,
 });
+const WorldLocationPickerMap = dynamic(() => import("@/components/WorldLocationPickerMap"), {
+  ssr: false,
+});
 
 const DOMESTIC_COUNTRY_NAME = "대한민국";
 
@@ -19,6 +22,7 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
   const [open, setOpen] = useState(false);
   const [countryId, setCountryId] = useState(countries[0]?.id ?? "");
   const [pickedLocation, setPickedLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
   const [caption, setCaption] = useState("");
   const [passcode, setPasscode] = useState("");
@@ -27,6 +31,13 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
 
   const selectedCountry = countries.find((c) => c.id === countryId);
   const isDomestic = selectedCountry?.name === DOMESTIC_COUNTRY_NAME;
+
+  // A location picked for one country shouldn't silently carry over if the
+  // destination is changed mid-edit.
+  useEffect(() => {
+    setPickedLocation(null);
+    setShowLocationPicker(false);
+  }, [countryId]);
 
   useEffect(() => {
     if (!open) return;
@@ -40,6 +51,7 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
   const resetForm = () => {
     setCountryId(countries[0]?.id ?? "");
     setPickedLocation(null);
+    setShowLocationPicker(false);
     setPhotoDataUrl(null);
     setCaption("");
     setPasscode("");
@@ -68,8 +80,8 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
     const result = await createMemory(
       {
         country: country.name,
-        lat: isDomestic && pickedLocation ? pickedLocation.lat : country.lat,
-        lng: isDomestic && pickedLocation ? pickedLocation.lng : country.lng,
+        lat: pickedLocation ? pickedLocation.lat : country.lat,
+        lng: pickedLocation ? pickedLocation.lng : country.lng,
         photoDataUrl,
         caption: caption.trim(),
       },
@@ -145,6 +157,27 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
                   <LocationPickerMap value={pickedLocation} onChange={setPickedLocation} />
                 </div>
               </>
+            )}
+
+            {!isDomestic && (
+              <div className="mt-4">
+                {showLocationPicker ? (
+                  <>
+                    <label className="block text-xs font-mono uppercase tracking-wide text-muted">
+                      {t("pickLocationLabel")}
+                    </label>
+                    <WorldLocationPickerMap value={pickedLocation} onChange={setPickedLocation} />
+                  </>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowLocationPicker(true)}
+                    className="text-xs text-muted transition-colors hover:text-accent"
+                  >
+                    {t("pickLocationToggle")}
+                  </button>
+                )}
+              </div>
             )}
 
             <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
