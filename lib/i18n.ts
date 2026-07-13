@@ -71,6 +71,9 @@ export const translations = {
     continentAntarctica: "남극",
     continentOther: "기타",
     allContinents: "전체",
+    changePhotoAction: "사진 변경",
+    changePhotoAriaLabel: "사진 변경",
+    changePhotoTitle: "사진 변경",
   },
   en: {
     siteTitle: "Wanderlog — A Travel Log",
@@ -140,6 +143,9 @@ export const translations = {
     continentAntarctica: "Antarctica",
     continentOther: "Other",
     allContinents: "All",
+    changePhotoAction: "Change Photo",
+    changePhotoAriaLabel: "Change photo",
+    changePhotoTitle: "Change Photo",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 

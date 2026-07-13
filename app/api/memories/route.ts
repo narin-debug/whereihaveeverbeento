@@ -11,9 +11,11 @@ async function ensureTable() {
       lng DOUBLE PRECISION NOT NULL,
       photo_data_url TEXT NOT NULL,
       caption TEXT NOT NULL,
-      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+  await sql`ALTER TABLE memories ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now()`;
 }
 
 // Photos are served separately (see [id]/photo/route.ts) so this response
@@ -23,7 +25,7 @@ async function ensureTable() {
 export async function GET() {
   await ensureTable();
   const { rows } = await sql`
-    SELECT id, country, lat, lng, caption, created_at AS "createdAt"
+    SELECT id, country, lat, lng, caption, created_at AS "createdAt", updated_at AS "updatedAt"
     FROM memories
     ORDER BY created_at ASC
   `;
@@ -66,7 +68,7 @@ export async function POST(request: Request) {
   const { rows } = await sql`
     INSERT INTO memories (id, country, lat, lng, photo_data_url, caption)
     VALUES (${id}, ${country}, ${lat}, ${lng}, ${photoDataUrl}, ${caption})
-    RETURNING id, country, lat, lng, caption, created_at AS "createdAt"
+    RETURNING id, country, lat, lng, caption, created_at AS "createdAt", updated_at AS "updatedAt"
   `;
 
   return NextResponse.json(rows[0], { status: 201 });

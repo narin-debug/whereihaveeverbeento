@@ -7,6 +7,7 @@ export type Memory = {
   lng: number;
   caption: string;
   createdAt: string;
+  updatedAt: string;
 };
 
 export type NewMemory = {
@@ -19,9 +20,12 @@ export type NewMemory = {
 
 // Photos are served from their own endpoint instead of being embedded in the
 // list/create responses, so a growing number of memories never inflates
-// those payloads past Vercel's 4.5MB serverless response limit.
-export function memoryPhotoUrl(id: string): string {
-  return `/api/memories/${id}/photo`;
+// those payloads past Vercel's 4.5MB serverless response limit. The photo
+// endpoint caches aggressively (see [id]/photo/route.ts), so the URL embeds
+// updatedAt as a cache-busting version -- otherwise editing a photo would
+// keep serving the old cached image at the same URL forever.
+export function memoryPhotoUrl(id: string, updatedAt: string): string {
+  return `/api/memories/${id}/photo?v=${encodeURIComponent(updatedAt)}`;
 }
 
 export async function fetchMemories(): Promise<Memory[]> {
@@ -38,6 +42,25 @@ export async function createMemory(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...memory, passcode }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    return { ok: false, error: body?.error ?? "save_failed" };
+  }
+
+  return { ok: true, memory: await res.json() };
+}
+
+export async function updateMemoryPhoto(
+  id: string,
+  photoDataUrl: string,
+  passcode: string,
+): Promise<{ ok: true; memory: Memory } | { ok: false; error: string }> {
+  const res = await fetch(`/api/memories/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ photoDataUrl, passcode }),
   });
 
   if (!res.ok) {

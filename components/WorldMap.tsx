@@ -58,7 +58,7 @@ function MemoryList({
         <div key={memory.id} className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={memoryPhotoUrl(memory.id)}
+            src={memoryPhotoUrl(memory.id, memory.updatedAt)}
             alt={memory.caption}
             className="h-12 w-12 shrink-0 rounded-md object-cover"
           />
