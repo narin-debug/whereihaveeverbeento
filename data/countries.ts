@@ -3,6 +3,7 @@ import isoCountries from "i18n-iso-countries";
 import ko from "i18n-iso-countries/langs/ko.json";
 import countries110m from "world-atlas/countries-110m.json";
 import { capitalCoordinates } from "./capital-coordinates";
+import { countryContinents, type ContinentKey } from "./continents";
 
 isoCountries.registerLocale(ko);
 
@@ -41,6 +42,7 @@ export type Country = {
   name: string;
   lat: number;
   lng: number;
+  continent: ContinentKey;
 };
 
 const topology = countries110m as unknown as Parameters<typeof feature>[0];
@@ -69,7 +71,9 @@ export const countries: Country[] = geo.features
     const coords = capitalCoordinates[id];
     if (!coords) return null;
     const [lat, lng] = coords;
-    return { id, name, lat, lng };
+    // Guaranteed present: continents.ts mirrors capital-coordinates.ts's key set exactly.
+    const continent = countryContinents[id];
+    return { id, name, lat, lng, continent };
   })
   .filter((c): c is Country => c !== null)
   .sort((a, b) => a.name.localeCompare(b.name, "ko"));
