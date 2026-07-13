@@ -1,25 +1,7 @@
 "use client";
 
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
-import L from "leaflet";
-
-const KOREA_BOUNDS = L.latLngBounds([32.9, 124.0], [38.7, 131.5]);
-
-const pickerIcon = L.divIcon({
-  className: "",
-  html: '<div class="trip-marker"></div>',
-  iconSize: [14, 14],
-  iconAnchor: [7, 7],
-});
-
-function ClickToPick({ onChange }: { onChange: (loc: { lat: number; lng: number }) => void }) {
-  useMapEvents({
-    click(e) {
-      onChange({ lat: e.latlng.lat, lng: e.latlng.lng });
-    },
-  });
-  return null;
-}
+import { useEffect, useRef } from "react";
+import { loadNaverMaps } from "@/lib/naver-maps";
 
 export default function LocationPickerMap({
   value,
@@ -28,22 +10,52 @@ export default function LocationPickerMap({
   value: { lat: number; lng: number } | null;
   onChange: (loc: { lat: number; lng: number }) => void;
 }) {
-  return (
-    <MapContainer
-      center={[36.3, 127.8]}
-      zoom={7}
-      minZoom={6}
-      maxBounds={KOREA_BOUNDS}
-      maxBoundsViscosity={1.0}
-      scrollWheelZoom={false}
-      className="h-48 w-full rounded-lg"
-    >
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-      />
-      <ClickToPick onChange={onChange} />
-      {value && <Marker position={[value.lat, value.lng]} icon={pickerIcon} />}
-    </MapContainer>
-  );
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    loadNaverMaps().then(() => {
+      if (cancelled || !containerRef.current || mapRef.current) return;
+      const { naver } = window;
+
+      mapRef.current = new naver.maps.Map(containerRef.current, {
+        center: new naver.maps.LatLng(36.3, 127.8),
+        zoom: 7,
+        minZoom: 6,
+      });
+
+      naver.maps.Event.addListener(mapRef.current, "click", (e: { coord: { y: number; x: number } }) => {
+        onChangeRef.current({ lat: e.coord.y, lng: e.coord.x });
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const { naver } = window;
+
+    if (!value) {
+      markerRef.current?.setMap(null);
+      markerRef.current = null;
+      return;
+    }
+
+    const position = new naver.maps.LatLng(value.lat, value.lng);
+    if (markerRef.current) {
+      markerRef.current.setPosition(position);
+    } else {
+      markerRef.current = new naver.maps.Marker({ position, map: mapRef.current });
+    }
+  }, [value]);
+
+  return <div ref={containerRef} className="h-48 w-full rounded-lg" />;
 }
