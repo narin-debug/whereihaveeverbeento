@@ -9,7 +9,7 @@ export async function GET(
   const { id } = await params;
 
   const { rows } = await sql`
-    SELECT id, title, body, created_at AS "createdAt", updated_at AS "updatedAt"
+    SELECT id, title, body, memory_id AS "memoryId", created_at AS "createdAt", updated_at AS "updatedAt"
     FROM posts WHERE id = ${id}
   `;
   if (rows.length === 0) {
@@ -48,7 +48,7 @@ export async function PATCH(
   const { rows } = await sql`
     UPDATE posts SET title = ${title.trim()}, body = ${postBody.trim()}, updated_at = now()
     WHERE id = ${id}
-    RETURNING id, title, body, created_at AS "createdAt", updated_at AS "updatedAt"
+    RETURNING id, title, body, memory_id AS "memoryId", created_at AS "createdAt", updated_at AS "updatedAt"
   `;
   if (rows.length === 0) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });

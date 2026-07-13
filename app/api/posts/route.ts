@@ -3,15 +3,32 @@ import { NextResponse } from "next/server";
 import { getClientIp, isRateLimited, recordFailedAttempt } from "@/lib/rate-limit";
 
 async function ensureTables() {
+  // posts.memory_id references this table, so it must exist first -- safe
+  // to repeat here even though /api/memories also creates it.
+  await sql`
+    CREATE TABLE IF NOT EXISTS memories (
+      id TEXT PRIMARY KEY,
+      country TEXT NOT NULL,
+      lat DOUBLE PRECISION NOT NULL,
+      lng DOUBLE PRECISION NOT NULL,
+      photo_data_url TEXT NOT NULL,
+      caption TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `;
   await sql`
     CREATE TABLE IF NOT EXISTS posts (
       id TEXT PRIMARY KEY,
       title TEXT NOT NULL,
       body TEXT NOT NULL,
+      memory_id TEXT REFERENCES memories(id) ON DELETE SET NULL,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `;
+  // Existing deployments already have a posts table from before memory_id
+  // existed -- add it retroactively rather than requiring a manual migration.
+  await sql`ALTER TABLE posts ADD COLUMN IF NOT EXISTS memory_id TEXT REFERENCES memories(id) ON DELETE SET NULL`;
   await sql`
     CREATE TABLE IF NOT EXISTS post_photos (
       id TEXT PRIMARY KEY,
@@ -28,7 +45,7 @@ async function ensureTables() {
 export async function GET() {
   await ensureTables();
   const { rows: posts } = await sql`
-    SELECT id, title, body, created_at AS "createdAt", updated_at AS "updatedAt"
+    SELECT id, title, body, memory_id AS "memoryId", created_at AS "createdAt", updated_at AS "updatedAt"
     FROM posts
     ORDER BY created_at DESC
   `;
@@ -60,7 +77,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const { passcode, title, body: postBody, photos } = body ?? {};
+  const { passcode, title, body: postBody, photos, memoryId } = body ?? {};
 
   if (passcode !== process.env.OWNER_PASSCODE) {
     await recordFailedAttempt(ip);
@@ -71,7 +88,8 @@ export async function POST(request: Request) {
     !title.trim() ||
     typeof postBody !== "string" ||
     !postBody.trim() ||
-    !Array.isArray(photos)
+    !Array.isArray(photos) ||
+    (memoryId !== undefined && memoryId !== null && typeof memoryId !== "string")
   ) {
     return NextResponse.json({ error: "missing_fields" }, { status: 400 });
   }
@@ -84,7 +102,8 @@ export async function POST(request: Request) {
   await ensureTables();
   const postId = crypto.randomUUID();
   await sql`
-    INSERT INTO posts (id, title, body) VALUES (${postId}, ${title.trim()}, ${postBody.trim()})
+    INSERT INTO posts (id, title, body, memory_id)
+    VALUES (${postId}, ${title.trim()}, ${postBody.trim()}, ${memoryId ?? null})
   `;
 
   const photoIds: string[] = [];
@@ -98,7 +117,7 @@ export async function POST(request: Request) {
   }
 
   const { rows } = await sql`
-    SELECT id, title, body, created_at AS "createdAt", updated_at AS "updatedAt"
+    SELECT id, title, body, memory_id AS "memoryId", created_at AS "createdAt", updated_at AS "updatedAt"
     FROM posts WHERE id = ${postId}
   `;
 

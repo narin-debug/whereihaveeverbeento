@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { createPost, type Post } from "@/lib/posts";
+import { fetchMemories, type Memory } from "@/lib/memories";
 import { compressImage } from "@/lib/images";
 import { translateErrorCode } from "@/lib/i18n";
 import { useTranslations } from "@/lib/locale-context";
@@ -12,9 +13,15 @@ export default function PostForm({ onAdded }: { onAdded: (post: Post) => void })
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
+  const [memoryId, setMemoryId] = useState("");
+  const [memories, setMemories] = useState<Memory[]>([]);
   const [passcode, setPasscode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchMemories().then(setMemories);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -29,6 +36,7 @@ export default function PostForm({ onAdded }: { onAdded: (post: Post) => void })
     setTitle("");
     setBody("");
     setPhotos([]);
+    setMemoryId("");
     setPasscode("");
     setError(null);
   };
@@ -57,7 +65,7 @@ export default function PostForm({ onAdded }: { onAdded: (post: Post) => void })
     setError(null);
 
     const result = await createPost(
-      { title: title.trim(), body: body.trim(), photos },
+      { title: title.trim(), body: body.trim(), photos, memoryId: memoryId || null },
       passcode,
     );
 
@@ -159,6 +167,22 @@ export default function PostForm({ onAdded }: { onAdded: (post: Post) => void })
                 ))}
               </div>
             )}
+
+            <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
+              {t("linkMemoryLabel")}
+            </label>
+            <select
+              value={memoryId}
+              onChange={(e) => setMemoryId(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            >
+              <option value="">{t("noneOption")}</option>
+              {memories.map((memory) => (
+                <option key={memory.id} value={memory.id}>
+                  {memory.country} · {memory.caption}
+                </option>
+              ))}
+            </select>
 
             <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
               {t("passwordLabel")}

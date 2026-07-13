@@ -60,6 +60,8 @@ export const translations = {
     backToList: "목록으로",
     editedLabel: "(수정됨)",
     errorPostNotFound: "글을 찾을 수 없어요.",
+    linkMemoryLabel: "타임라인 카드 연결 (선택)",
+    noneOption: "없음",
   },
   en: {
     siteTitle: "Wanderlog — A Travel Log",
@@ -118,6 +120,8 @@ export const translations = {
     backToList: "Back to list",
     editedLabel: "(edited)",
     errorPostNotFound: "Couldn't find that post.",
+    linkMemoryLabel: "Link a timeline card (optional)",
+    noneOption: "None",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 

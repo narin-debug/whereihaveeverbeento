@@ -4,6 +4,7 @@ export type Post = {
   id: string;
   title: string;
   body: string;
+  memoryId: string | null;
   createdAt: string;
   updatedAt: string;
   photoIds: string[];
@@ -13,6 +14,7 @@ export type NewPost = {
   title: string;
   body: string;
   photos: string[]; // compressed data URLs
+  memoryId?: string | null;
 };
 
 // Mirrors memoryPhotoUrl: photos are served individually rather than
