@@ -42,10 +42,6 @@ export default function Home() {
     setMemories((prev) => prev.filter((m) => m.id !== id));
   };
 
-  const handleMemoryUpdated = (updated: Memory) => {
-    setMemories((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
-  };
-
   return (
     <>
       <Nav />
@@ -103,11 +99,7 @@ export default function Home() {
         >
           {t("timelineHeading")}
         </motion.h2>
-        <Timeline
-          memories={memories}
-          onMemoryDeleted={handleMemoryDeleted}
-          onMemoryUpdated={handleMemoryUpdated}
-        />
+        <Timeline memories={memories} onMemoryDeleted={handleMemoryDeleted} />
       </section>
 
       <section id="about" className="border-t border-border px-6 py-16 text-center md:px-12">
