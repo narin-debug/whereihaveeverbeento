@@ -23,8 +23,15 @@ function InvalidateSizeOnMount() {
   const map = useMap();
 
   useEffect(() => {
-    const id = window.setTimeout(() => map.invalidateSize(), 150);
-    return () => window.clearTimeout(id);
+    // A fixed delay can't account for layout shifts that happen later (web
+    // fonts loading, the section's fade-in animation, orientation changes),
+    // so keep the map's internal size in sync with its container for as
+    // long as it's mounted, not just once on load.
+    map.invalidateSize();
+    const container = map.getContainer();
+    const observer = new ResizeObserver(() => map.invalidateSize());
+    observer.observe(container);
+    return () => observer.disconnect();
   }, [map]);
 
   return null;
