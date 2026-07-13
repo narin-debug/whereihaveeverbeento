@@ -70,6 +70,7 @@ export const translations = {
     continentOceania: "오세아니아",
     continentAntarctica: "남극",
     continentOther: "기타",
+    allContinents: "전체",
   },
   en: {
     siteTitle: "Wanderlog — A Travel Log",
@@ -138,6 +139,7 @@ export const translations = {
     continentOceania: "Oceania",
     continentAntarctica: "Antarctica",
     continentOther: "Other",
+    allContinents: "All",
   },
 } as const satisfies Record<Locale, Record<string, string>>;
 
