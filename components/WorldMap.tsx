@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import { trips } from "@/data/trips";
@@ -84,19 +84,6 @@ export default function WorldMap({
   memories: Memory[];
   onMemoryDeleted: (id: string) => void;
 }) {
-  const tripCountries = useMemo(() => new Set(trips.map((t) => t.country)), []);
-
-  const memoriesByCountry = useMemo(() => {
-    const map = new Map<string, Memory[]>();
-    for (const memory of memories) {
-      if (tripCountries.has(memory.country)) continue;
-      const list = map.get(memory.country) ?? [];
-      list.push(memory);
-      map.set(memory.country, list);
-    }
-    return map;
-  }, [memories, tripCountries]);
-
   return (
     <MapContainer
       center={[20, 30]}
@@ -129,17 +116,13 @@ export default function WorldMap({
           </Marker>
         );
       })}
-      {[...memoriesByCountry.entries()].map(([country, countryMemories]) => (
-        <Marker
-          key={country}
-          position={[countryMemories[0].lat, countryMemories[0].lng]}
-          icon={tripIcon}
-        >
+      {memories.map((memory) => (
+        <Marker key={memory.id} position={[memory.lat, memory.lng]} icon={tripIcon}>
           <Popup>
             <p className="font-mono text-[11px] uppercase tracking-wide text-muted">
-              {country}
+              {memory.country}
             </p>
-            <MemoryList memories={countryMemories} onDeleted={onMemoryDeleted} />
+            <MemoryList memories={[memory]} onDeleted={onMemoryDeleted} />
           </Popup>
         </Marker>
       ))}
