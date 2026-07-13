@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "@/lib/locale-context";
 
 export default function Nav() {
@@ -11,12 +12,15 @@ export default function Nav() {
         Wander<span className="text-accent">log</span>
       </span>
       <nav className="flex gap-6 font-mono text-sm text-muted">
-        <a href="#map" className="transition-colors hover:text-foreground">
+        <Link href="/#map" className="transition-colors hover:text-foreground">
           {t("navMap")}
-        </a>
-        <a href="#about" className="transition-colors hover:text-foreground">
+        </Link>
+        <Link href="/blog" className="transition-colors hover:text-foreground">
+          {t("navBlog")}
+        </Link>
+        <Link href="/#about" className="transition-colors hover:text-foreground">
           {t("navAbout")}
-        </a>
+        </Link>
       </nav>
     </header>
   );

@@ -1,18 +1,17 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { countries } from "@/data/countries";
-import { createMemory, type Memory } from "@/lib/memories";
+import { createPost, type Post } from "@/lib/posts";
 import { compressImage } from "@/lib/images";
 import { translateErrorCode } from "@/lib/i18n";
 import { useTranslations } from "@/lib/locale-context";
 
-export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => void }) {
+export default function PostForm({ onAdded }: { onAdded: (post: Post) => void }) {
   const t = useTranslations();
   const [open, setOpen] = useState(false);
-  const [countryId, setCountryId] = useState(countries[0]?.id ?? "");
-  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
-  const [caption, setCaption] = useState("");
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
   const [passcode, setPasscode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,39 +26,38 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
   }, [open]);
 
   const resetForm = () => {
-    setCountryId(countries[0]?.id ?? "");
-    setPhotoDataUrl(null);
-    setCaption("");
+    setTitle("");
+    setBody("");
+    setPhotos([]);
     setPasscode("");
     setError(null);
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     try {
-      setPhotoDataUrl(await compressImage(file));
+      const compressed = await Promise.all([...files].map(compressImage));
+      setPhotos((prev) => [...prev, ...compressed]);
     } catch {
       setError(t("errorPhotoProcessing"));
     }
+    e.target.value = "";
+  };
+
+  const removePhoto = (index: number) => {
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const country = countries.find((c) => c.id === countryId);
-    if (!country || !photoDataUrl || !caption.trim() || !passcode) return;
+    if (!title.trim() || !body.trim() || !passcode) return;
 
     setSubmitting(true);
     setError(null);
 
-    const result = await createMemory(
-      {
-        country: country.name,
-        lat: country.lat,
-        lng: country.lng,
-        photoDataUrl,
-        caption: caption.trim(),
-      },
+    const result = await createPost(
+      { title: title.trim(), body: body.trim(), photos },
       passcode,
     );
 
@@ -70,7 +68,7 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
       return;
     }
 
-    onAdded(result.memory);
+    onAdded(result.post);
     resetForm();
     setOpen(false);
   };
@@ -82,7 +80,7 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
         onClick={() => setOpen(true)}
         className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-accent"
       >
-        {t("addMemory")}
+        {t("writePost")}
       </button>
 
       {open && (
@@ -93,10 +91,10 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
           <form
             onClick={(e) => e.stopPropagation()}
             onSubmit={handleSubmit}
-            className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-xl"
+            className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-surface p-6 shadow-xl"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-bold">{t("formTitle")}</h3>
+              <h3 className="text-lg font-bold">{t("postFormTitle")}</h3>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -108,48 +106,59 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
             </div>
 
             <label className="mt-5 block text-xs font-mono uppercase tracking-wide text-muted">
-              {t("destinationLabel")}
+              {t("postTitleLabel")}
             </label>
-            <select
-              value={countryId}
-              onChange={(e) => setCountryId(e.target.value)}
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t("postTitlePlaceholder")}
               className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            >
-              {countries.map((country) => (
-                <option key={country.id} value={country.id}>
-                  {country.name}
-                </option>
-              ))}
-            </select>
+            />
 
             <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
-              {t("photoLabel")}
+              {t("postBodyLabel")}
+            </label>
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder={t("postBodyPlaceholder")}
+              rows={8}
+              className="mt-2 w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+
+            <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
+              {t("postPhotosLabel")}
             </label>
             <input
               type="file"
               accept="image/*"
-              onChange={handleFileChange}
+              multiple
+              onChange={handleFilesChange}
               className="mt-2 w-full text-sm"
             />
-            {photoDataUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={photoDataUrl}
-                alt={t("photoPreviewAlt")}
-                className="mt-3 h-32 w-full rounded-lg object-cover"
-              />
+            {photos.length > 0 && (
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {photos.map((photo, i) => (
+                  <div key={i} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo}
+                      alt=""
+                      className="h-20 w-full rounded-lg object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(i)}
+                      aria-label={t("removePhoto")}
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-xs text-white"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
-
-            <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
-              {t("captionLabel")}
-            </label>
-            <textarea
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder={t("captionPlaceholder")}
-              rows={3}
-              className="mt-2 w-full resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm"
-            />
 
             <label className="mt-4 block text-xs font-mono uppercase tracking-wide text-muted">
               {t("passwordLabel")}
@@ -166,10 +175,10 @@ export default function MemoryForm({ onAdded }: { onAdded: (memory: Memory) => v
 
             <button
               type="submit"
-              disabled={!countryId || !photoDataUrl || !caption.trim() || !passcode || submitting}
+              disabled={!title.trim() || !body.trim() || !passcode || submitting}
               className="mt-5 w-full rounded-full bg-accent py-2 text-sm font-semibold text-background disabled:opacity-40"
             >
-              {submitting ? t("saving") : t("saveMemory")}
+              {submitting ? t("publishing") : t("publishPost")}
             </button>
           </form>
         </div>
