@@ -92,7 +92,7 @@ export default function WorldMap({
       maxBounds={WORLD_BOUNDS}
       maxBoundsViscosity={1.0}
       worldCopyJump={false}
-      scrollWheelZoom={false}
+      scrollWheelZoom={true}
       className="h-full w-full"
     >
       <InvalidateSizeOnMount />
