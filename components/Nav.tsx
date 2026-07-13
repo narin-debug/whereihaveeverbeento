@@ -15,9 +15,6 @@ export default function Nav() {
         <Link href="/#map" className="transition-colors hover:text-foreground">
           {t("navMap")}
         </Link>
-        <Link href="/blog" className="transition-colors hover:text-foreground">
-          {t("navBlog")}
-        </Link>
         <Link href="/#about" className="transition-colors hover:text-foreground">
           {t("navAbout")}
         </Link>
