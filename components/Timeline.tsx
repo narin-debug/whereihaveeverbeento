@@ -74,18 +74,20 @@ export default function Timeline({
 
   return (
     <div>
-      <select
-        value={continentFilter}
-        onChange={(e) => setContinentFilter(e.target.value as ContinentKey | "other" | "all")}
-        className="mb-8 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
-      >
-        <option value="all">{t("allContinents")}</option>
-        {presentContinents.map((key) => (
-          <option key={key} value={key}>
-            {t(CONTINENT_LABEL_KEYS[key])}
-          </option>
-        ))}
-      </select>
+      {presentContinents.length > 1 && (
+        <select
+          value={continentFilter}
+          onChange={(e) => setContinentFilter(e.target.value as ContinentKey | "other" | "all")}
+          className="mb-8 rounded-lg border border-border bg-surface px-3 py-2 text-sm"
+        >
+          <option value="all">{t("allContinents")}</option>
+          {presentContinents.map((key) => (
+            <option key={key} value={key}>
+              {t(CONTINENT_LABEL_KEYS[key])}
+            </option>
+          ))}
+        </select>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((memory) => (
