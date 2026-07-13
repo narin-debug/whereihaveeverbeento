@@ -7,7 +7,7 @@ export const translations = {
     // Deliberately English in both locales -- part of the site's bilingual
     // branding style (see also the "Voyager" hero heading), not content.
     navMap: "Map",
-    navDomestic: "국내",
+    navDomestic: "Korea",
     navAbout: "About",
     heroEyebrow: "A Travel Log",
     journeySoFar: "지금까지의 여정",
@@ -57,7 +57,7 @@ export const translations = {
     siteTitle: "Wanderlog — A Travel Log",
     siteDescription: "A record of journeys around the world",
     navMap: "Map",
-    navDomestic: "Domestic",
+    navDomestic: "Korea",
     navAbout: "About",
     heroEyebrow: "A Travel Log",
     journeySoFar: "The Journey So Far",
