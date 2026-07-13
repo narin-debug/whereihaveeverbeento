@@ -7,6 +7,7 @@ import Nav from "@/components/Nav";
 import GlobeSpotlight from "@/components/GlobeSpotlight";
 import MemoryForm from "@/components/MemoryForm";
 import Timeline from "@/components/Timeline";
+import BackupControl from "@/components/BackupControl";
 import { fetchMemories, type Memory } from "@/lib/memories";
 import { useTranslations } from "@/lib/locale-context";
 
@@ -104,6 +105,9 @@ export default function Home() {
 
       <section id="about" className="border-t border-border px-6 py-16 text-center md:px-12">
         <p className="mx-auto max-w-lg text-sm text-muted">{t("aboutText")}</p>
+        <div className="mt-6">
+          <BackupControl />
+        </div>
       </section>
     </>
   );

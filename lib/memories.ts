@@ -71,6 +71,29 @@ export async function updateMemoryPhoto(
   return { ok: true, memory: await res.json() };
 }
 
+export type BackupMemory = Memory & { photoDataUrl: string };
+
+// Restores one memory from a backup export, preserving its original id and
+// timestamps. Safe to re-run over the same backup file -- the server skips
+// any memory whose id already exists rather than overwriting it.
+export async function restoreMemory(
+  memory: BackupMemory,
+  passcode: string,
+): Promise<{ ok: true; restored: boolean } | { ok: false; error: string }> {
+  const res = await fetch("/api/memories/restore", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...memory, passcode }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    return { ok: false, error: body?.error ?? "save_failed" };
+  }
+
+  return { ok: true, ...(await res.json()) };
+}
+
 export async function deleteMemory(
   id: string,
   passcode: string,
